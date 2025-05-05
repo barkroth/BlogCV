@@ -8,6 +8,8 @@ import "swiper/css/pagination";
 import "swiper/css/effect-coverflow";
 import Modal from "./components/modal";
 import axios from "axios";
+import { yorumEkle } from "@/lib/yorumekle";
+import { firestore } from "../lib/firebase";
 
 import { useEffect, useState, useMemo } from "react";
 
@@ -23,6 +25,26 @@ export default function () {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null);
+
+  // yorumlariçinStateler
+  const [adSoyad, setAdSoyad] = useState("");
+  const [yorumMetni, setYorumMetni] = useState("");
+  const [yükleniyor, setYükleniyor] = useState(false);
+  const formuGonder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setYükleniyor(true);
+
+    try {
+      await yorumEkle(adSoyad, yorumMetni);
+      alert("Yorum başarıyla eklendi!");
+      setAdSoyad("");
+      setYorumMetni("");
+    } catch (hata) {
+      alert("Yorum eklenirken hata oluştu.");
+    } finally {
+      setYükleniyor(false);
+    }
+  };
 
   const getPhotos = async (country?: string) => {
     setLoading(true);
@@ -317,7 +339,7 @@ export default function () {
             <img
               src="/images/japonya75.jpeg"
               alt=""
-              className="object-cover rounded-xl"
+              className="object-cover rounded-bl-xl rounded-br-xl"
             />
           </div>
           {/* Sırbistan Div */}
@@ -331,7 +353,7 @@ export default function () {
             <img
               src="/images/Sırbistan6.jpeg"
               alt=""
-              className="object-cover rounded-xl"
+              className="object-cover rounded-bl-xl rounded-br-xl"
             />
           </div>
           {/* İspanya Div */}
@@ -345,7 +367,7 @@ export default function () {
             <img
               src="/images/barcelona1.jpeg"
               alt=""
-              className="object-cover rounded-xl"
+              className="object-cover rounded-bl-xl rounded-br-xl"
             />
           </div>
           {/* İtalya Div */}
@@ -359,7 +381,7 @@ export default function () {
             <img
               src="/images/roma-italya2.jpeg"
               alt=""
-              className="object-cover rounded-xl"
+              className="object-cover rounded-bl-xl rounded-br-xl"
             />
           </div>
           {/* Rusya Div */}
@@ -373,7 +395,7 @@ export default function () {
             <img
               src="/images/rusya1.jpeg"
               alt=""
-              className="object-cover rounded-xl"
+              className="object-cover rounded-bl-xl rounded-br-xl"
             />
           </div>
           {/* Karadağ Div */}
@@ -387,14 +409,40 @@ export default function () {
             <img
               src="/images/karadağ1.jpeg"
               alt=""
-              className="object-cover rounded-xl"
+              className="object-cover rounded-bl-xl rounded-br-xl"
             />
           </div>
         </div>
         {/* Yorumlar Alanı Olacak */}
         <div className="mt-16 space-y-8 px-10 max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-8 text-center">Yorumlar</h2>
-
+          <h2 className="text-2xl font-bold mb-8 text-center text-black">
+            Yorumlar
+          </h2>
+          <h2 className="text-xl font-semibold mb-4">Yorum Yap</h2>
+          <form onSubmit={formuGonder} className="space-y-4">
+            <input
+              type="text"
+              placeholder="Ad Soyad"
+              value={adSoyad}
+              onChange={(e) => setAdSoyad(e.target.value)}
+              className="w-full border rounded p-2"
+              required
+            />
+            <textarea
+              placeholder="Yorumunuz"
+              value={yorumMetni}
+              onChange={(e) => setYorumMetni(e.target.value)}
+              className="w-full border rounded p-2 h-24"
+              required
+            />
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded"
+              disabled={yükleniyor}
+            >
+              {yükleniyor ? "Gönderiliyor..." : "Yorumu Gönder"}
+            </button>
+          </form>
           <div className="p-3 border border-gray-200 rounded-lg shadow bg-white hover:shadow-xl transition-all duration-300">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-lg font-bold text-white">
