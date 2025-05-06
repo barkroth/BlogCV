@@ -1,6 +1,8 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, collection, getDocs, orderBy, query } from "firebase/firestore";
+import { addDoc } from "firebase/firestore";
 
+// Firebase config bilgileri
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -11,12 +13,30 @@ const firebaseConfig = {
   // databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL, gerçekzamanlıdatabase kullanacaksam bu olacak unutma.
 };
 
+// Firebase'i başlatmak için fonks.
 const app = initializeApp(firebaseConfig);
 const firestore = getFirestore(app);
 
+// Yorumları çekmek için fonks.
+export const getYorumlar = async () => {
+  const yorumlarRef = collection(firestore, "yorumlar");
+  const q = query(yorumlarRef, orderBy("olusturulmaTarihi", "desc"));
+  const yorumlarSnapshot = await await getDocs(q);
+  const yorumlarListesi = yorumlarSnapshot.docs.map(doc => doc.data());
+  return yorumlarListesi;
+};
+// Yorum eklemeye Fonksi.
+export const yorumEkle = async (ad: string, yorum: string) => {
+  await addDoc(collection(firestore, "yorumlar"), {
+    ad,
+    yorum,
+    createdAt: new Date(),
+  });
+};
+
 export { firestore };
 
-  
+// biryerde hata var bak buna
 
 // import { initializeApp } from "firebase/app";
 // import { getAnalytics } from "firebase/analytics";

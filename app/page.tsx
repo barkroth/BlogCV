@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { useEffect, useState, useMemo } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, EffectCoverflow } from "swiper/modules";
 import "swiper/css";
@@ -10,8 +11,8 @@ import Modal from "./components/modal";
 import axios from "axios";
 import { yorumEkle } from "@/lib/yorumekle";
 import { firestore } from "../lib/firebase";
-
-import { useEffect, useState, useMemo } from "react";
+import { getYorumlar } from "../lib/firebase";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
 
 export default function () {
   const [photos, setPhotos] = useState<any[]>([]);
@@ -26,25 +27,38 @@ export default function () {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null);
 
-  // yorumlariçinStateler
+  // YorumlariçinStateler
   const [adSoyad, setAdSoyad] = useState("");
   const [yorumMetni, setYorumMetni] = useState("");
   const [yükleniyor, setYükleniyor] = useState(false);
+  const [yorumlar, setYorumlar] = useState<any[]>([]);
+
   const formuGonder = async (e: React.FormEvent) => {
     e.preventDefault();
     setYükleniyor(true);
-
     try {
       await yorumEkle(adSoyad, yorumMetni);
       alert("Yorum başarıyla eklendi!");
       setAdSoyad("");
       setYorumMetni("");
+
+      const guncelYorumlar = await getYorumlar();
+      setYorumlar(guncelYorumlar);
     } catch (hata) {
-      alert("Yorum eklenirken hata oluştu.");
+      alert("Yorum eklenirken bir hata oluştu.");
     } finally {
       setYükleniyor(false);
     }
   };
+
+  useEffect(() => {
+    const yorumlariGetir = async () => {
+      const yorumdatası = await getYorumlar();
+      setYorumlar(yorumdatası);
+    };
+
+    yorumlariGetir();
+  }, []);
 
   const getPhotos = async (country?: string) => {
     setLoading(true);
@@ -324,8 +338,6 @@ export default function () {
         </nav>
         {/* Navbar boşluğu için padding hala düzenlenebilir. Bitince dönüp bir bak */}
         <div className="pt-20" />
-        {/* AnasayfaDivOlur */}
-        {/* <div></div> */}
         {/* FotoğrafSayfasıDivi */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 px-10 pl-26 py-15 mx-auto container">
           {/* Japonya Div */}
@@ -418,21 +430,21 @@ export default function () {
           <h2 className="text-2xl font-bold mb-8 text-center text-black">
             Yorumlar
           </h2>
-          <h2 className="text-xl font-semibold mb-4">Yorum Yap</h2>
+          <h2 className="text-xl font-semibold mb-4 text-black">Yorum Yaz</h2>
           <form onSubmit={formuGonder} className="space-y-4">
             <input
               type="text"
-              placeholder="Ad Soyad"
+              placeholder="Ad Soyad Giriniz"
               value={adSoyad}
               onChange={(e) => setAdSoyad(e.target.value)}
-              className="w-full border rounded p-2"
+              className="w-full border rounded p-2 text-black"
               required
             />
             <textarea
-              placeholder="Yorumunuz"
+              placeholder="Yorumunuzu Giriniz"
               value={yorumMetni}
               onChange={(e) => setYorumMetni(e.target.value)}
-              className="w-full border rounded p-2 h-24"
+              className="w-full border rounded p-2 h-24 text-black"
               required
             />
             <button
@@ -443,34 +455,32 @@ export default function () {
               {yükleniyor ? "Gönderiliyor..." : "Yorumu Gönder"}
             </button>
           </form>
-          <div className="p-3 border border-gray-200 rounded-lg shadow bg-white hover:shadow-xl transition-all duration-300">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-lg font-bold text-white">
-                V
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-gray-800">Veli</h3>
-                <p className="text-xs text-gray-500">21 Nisan 2025</p>
-              </div>
-            </div>
-            <p className="mt-1 text-gray-700 text-sm">
-              Gerçekten harika bir yerdi, çok keyif aldım!
-            </p>
-          </div>
 
           <div className="p-3 border border-gray-200 rounded-lg shadow bg-white hover:shadow-xl transition-all duration-300">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-lg font-bold text-white">
-                A
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-gray-800">Ali</h3>
-                <p className="text-xs text-gray-500">20 Nisan 2025</p>
-              </div>
+            <div>
+              <h2 className="text-xl font-bold mb-4 text-black">Yorumlar</h2>
+              <ul>
+                {yorumlar.map((yorum, index) => (
+                  <li
+                    key={index}
+                    className="mb-2 p-2 bg-white text-black rounded border-b border-gray-300 last:border-b-0"
+                  >
+                    <p>
+                      <strong>{yorum.adSoyad}</strong>:
+                    </p>
+                    <p>{yorum.yorumMetni}</p>
+                    <p className="text-sm text-gray-500">
+                      {yorum.olusturulmaTarihi
+                        ?.toDate()
+                        .toLocaleString("tr-TR", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
+                    </p>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <p className="mt-1 text-gray-700 text-sm">
-              Ooo Japonya'yı buradan görmek beni çok mutlu etti haha
-            </p>
           </div>
         </div>
 
