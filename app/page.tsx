@@ -32,6 +32,10 @@ export default function () {
   const [yorumMetni, setYorumMetni] = useState("");
   const [yükleniyor, setYükleniyor] = useState(false);
   const [yorumlar, setYorumlar] = useState<any[]>([]);
+  const [gosterilenYorumSayisi, setGosterilenYorumSayisi] = useState(3);
+  const dahaFazlaGoster = () => {
+    setGosterilenYorumSayisi((prev) => prev + 5); // 5 tane yorum gösterecek burası
+  };
 
   const formuGonder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -425,31 +429,34 @@ export default function () {
             />
           </div>
         </div>
+
         {/* Yorumlar Alanı Olacak */}
-        <div className="mt-16 space-y-8 px-10 max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-8 text-center text-black">
+        <div className="mt-16 space-y-8 px-4 sm:px-10 max-w-4xl mx-auto bg-white/50 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
+          <h2 className="text-3xl font-bold mb-8 text-center text-gray-800 border-b pb-4">
             Yorumlar
           </h2>
-          <h2 className="text-xl font-semibold mb-4 text-black">Yorum Yaz</h2>
+          <h2 className="text-xl font-semibold mb-6 text-gray-800">
+            Yorum Yaz
+          </h2>
           <form onSubmit={formuGonder} className="space-y-4">
             <input
               type="text"
               placeholder="Ad Soyad Giriniz"
               value={adSoyad}
               onChange={(e) => setAdSoyad(e.target.value)}
-              className="w-full border rounded p-2 text-black"
+              className="w-full border border-gray-300 rounded-lg p-3 text-gray-800 focus:ring-2 focus:ring-orange-400 focus:border-transparent transition duration-200 outline-none"
               required
             />
             <textarea
               placeholder="Yorumunuzu Giriniz"
               value={yorumMetni}
               onChange={(e) => setYorumMetni(e.target.value)}
-              className="w-full border rounded p-2 h-24 text-black"
+              className="w-full border border-gray-300 rounded-lg p-3 h-32 text-gray-800 focus:ring-2 focus:ring-orange-400 focus:border-transparent transition duration-200 outline-none resize-none"
               required
             />
             <button
               type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded"
+              className="bg-gradient-to-r from-orange-400 to-red-500 text-white px-6 py-3 rounded-lg font-medium hover:from-orange-500 hover:to-red-600 transition duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={yükleniyor}
             >
               {yükleniyor ? "Gönderiliyor..." : "Yorumu Gönder"}
@@ -459,27 +466,46 @@ export default function () {
           <div className="p-3 border border-gray-200 rounded-lg shadow bg-white hover:shadow-xl transition-all duration-300">
             <div>
               <h2 className="text-xl font-bold mb-4 text-black">Yorumlar</h2>
-              <ul>
-                {yorumlar.map((yorum, index) => (
-                  <li
-                    key={index}
-                    className="mb-2 p-2 bg-white text-black rounded border-b border-gray-300 last:border-b-0"
-                  >
-                    <p>
-                      <strong>{yorum.adSoyad}</strong>:
-                    </p>
-                    <p>{yorum.yorumMetni}</p>
-                    <p className="text-sm text-gray-500">
-                      {yorum.olusturulmaTarihi
-                        ?.toDate()
-                        .toLocaleString("tr-TR", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })}
-                    </p>
-                  </li>
-                ))}
+              <ul className="space-y-4">
+                {yorumlar
+                  .slice(0, gosterilenYorumSayisi)
+                  .map((yorum, index) => (
+                    <li
+                      key={index}
+                      className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:shadow-md transition-shadow duration-300"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-semibold">
+                          {yorum.adSoyad.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800">
+                            {yorum.adSoyad}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {yorum.olusturulmaTarihi
+                              ?.toDate()
+                              .toLocaleString("tr-TR", {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-gray-700 ml-10">{yorum.yorumMetni}</p>
+                    </li>
+                  ))}
               </ul>
+              {yorumlar.length > gosterilenYorumSayisi && (
+                <div className="text-center mt-4">
+                  <button
+                    onClick={() => setGosterilenYorumSayisi((prev) => prev + 5)}
+                    className="text-sm text-orange-600 hover:underline"
+                  >
+                    Daha fazla yorum göster
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
