@@ -18,6 +18,34 @@ export default function () {
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string>("Japonya");
+
+  const countries = [
+    {
+      name: "Japonya",
+      image: "/images/japonya75.jpeg",
+    },
+    {
+      name: "Sırbistan",
+      image: "/images/Sırbistan6.jpeg",
+    },
+    {
+      name: "İspanya",
+      image: "/images/barcelona1.jpeg",
+    },
+    {
+      name: "İtalya",
+      image: "/images/roma-italya2.jpeg",
+    },
+    {
+      name: "Rusya",
+      image: "/images/rusya1.jpeg",
+    },
+    {
+      name: "Karadağ",
+      image: "/images/karadağ1.jpeg",
+    },
+  ];
+
   const filteredPhotos = useMemo(
     () => photos.filter((photo) => photo.country === selectedCountry),
     [photos, selectedCountry]
@@ -27,7 +55,7 @@ export default function () {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null);
 
-  // YorumlariçinStateler
+  // Yorumlar için Stateler
   const [adSoyad, setAdSoyad] = useState("");
   const [yorumMetni, setYorumMetni] = useState("");
   const [yükleniyor, setYükleniyor] = useState(false);
@@ -247,7 +275,7 @@ export default function () {
             }`}
           >
             <div className="flex flex-col items-start px-6 space-y-2">
-              {/* Ülkeler Dropdown Mobil */}
+              {/* Ülkeler Dropdown Mobil için */}
               <div className="w-full">
                 <button
                   className="flex items-center space-x-2 text-gray-800 hover:text-orange-400 w-full py-2"
@@ -344,90 +372,22 @@ export default function () {
         <div className="pt-20" />
         {/* FotoğrafSayfasıDivi */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 px-10 pl-26 py-15 mx-auto container">
-          {/* Japonya Div */}
-          <div
-            className="bg-white shadow-md border border-gray-200 hover:scale-105 transition-transform duration-300 cursor-pointer rounded-xl"
-            onClick={() => handleCountryClick("Japonya")}
-          >
-            <h1 className="text-xl font-semibold mb-2 text-gray-800 text-center mt-2">
-              Japonya
-            </h1>
-            <img
-              src="/images/japonya75.jpeg"
-              alt=""
-              className="object-cover rounded-bl-xl rounded-br-xl"
-            />
-          </div>
-          {/* Sırbistan Div */}
-          <div
-            className="bg-white shadow-md border border-gray-200 hover:scale-105 transition-transform duration-300 cursor-pointer rounded-xl"
-            onClick={() => handleCountryClick("Sırbistan")}
-          >
-            <h1 className="text-xl font-semibold mb-2 text-gray-800 text-center mt-2">
-              Sırbistan
-            </h1>
-            <img
-              src="/images/Sırbistan6.jpeg"
-              alt=""
-              className="object-cover rounded-bl-xl rounded-br-xl"
-            />
-          </div>
-          {/* İspanya Div */}
-          <div
-            className="bg-white shadow-md border border-gray-200 hover:scale-105 transition-transform duration-300 cursor-pointer rounded-xl"
-            onClick={() => handleCountryClick("İspanya")}
-          >
-            <h1 className="text-xl font-semibold mb-2 text-gray-800 text-center mt-2">
-              İspanya
-            </h1>
-            <img
-              src="/images/barcelona1.jpeg"
-              alt=""
-              className="object-cover rounded-bl-xl rounded-br-xl"
-            />
-          </div>
-          {/* İtalya Div */}
-          <div
-            className="bg-white shadow-md border border-gray-200 hover:scale-105 transition-transform duration-300 cursor-pointer rounded-xl"
-            onClick={() => handleCountryClick("İtalya")}
-          >
-            <h1 className="text-xl font-semibold mb-2 text-gray-800 text-center mt-2">
-              İtalya
-            </h1>
-            <img
-              src="/images/roma-italya2.jpeg"
-              alt=""
-              className="object-cover rounded-bl-xl rounded-br-xl"
-            />
-          </div>
-          {/* Rusya Div */}
-          <div
-            className="bg-white shadow-md border border-gray-200 hover:scale-105 transition-transform duration-300 cursor-pointer rounded-xl"
-            onClick={() => handleCountryClick("Rusya")}
-          >
-            <h1 className="text-xl font-semibold mb-2 text-gray-800 text-center mt-2">
-              Rusya
-            </h1>
-            <img
-              src="/images/rusya1.jpeg"
-              alt=""
-              className="object-cover rounded-bl-xl rounded-br-xl"
-            />
-          </div>
-          {/* Karadağ Div */}
-          <div
-            className="bg-white shadow-md border border-gray-200 hover:scale-105 transition-transform duration-300 cursor-pointer rounded-xl"
-            onClick={() => handleCountryClick("Karadağ")}
-          >
-            <h1 className="text-xl font-semibold mb-2 text-gray-800 text-center mt-2">
-              Karadağ
-            </h1>
-            <img
-              src="/images/karadağ1.jpeg"
-              alt=""
-              className="object-cover rounded-bl-xl rounded-br-xl"
-            />
-          </div>
+          {countries.map((country, index) => (
+            <div
+              key={index}
+              className="bg-white shadow-md border border-gray-200 hover:scale-105 transition-transform duration-300 cursor-pointer rounded-xl"
+              onClick={() => handleCountryClick(country.name)}
+            >
+              <h1 className="text-xl font-semibold mb-2 text-gray-800 text-center mt-2">
+                {country.name}
+              </h1>
+              <img
+                src={country.image}
+                alt={`${country.name} fotoğrafı`}
+                className="object-cover rounded-bl-xl rounded-br-xl"
+              />
+            </div>
+          ))}
         </div>
 
         {/* Yorumlar Alanı Olacak */}
@@ -530,11 +490,11 @@ export default function () {
                   keyif alıyorum. <br /> Bu blogda Japonya, Sırbistan, İspanya,
                   İtalya, Rusya ve Karadağ seyahatlerimde çektiğim kareleri
                   sizlerle paylaşmak istiyorum. Projelerimde React, Next.js ve
-                  Tailwind CSS'in yanı sıra, etkileşimli 3D carousel'ler için
-                  Swiper gibi teknolojiler kullanarak hem estetik hem de
-                  performans odaklı çözümler geliştiriyorum. <br /> İspanya'dan
-                  Japonya'ya uzanan bu blog, hem satırlarımı hem de anılarımı
-                  taşıyor.
+                  Tailwind CSS'in yanı sıra, database için Firebase,
+                  etkileşimli 3D carousel'ler için Swiper gibi teknolojiler
+                  kullanarak hem estetik hem de performans odaklı çözümler
+                  geliştiriyorum. <br /> İspanya'dan Japonya'ya uzanan bu blog,
+                  hem satırlarımı hem de anılarımı taşıyor.
                 </p>
               </div>
 
@@ -647,7 +607,7 @@ export default function () {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <Modal onClose={closeModal}>
-            <div className="w-full h-[80vh] flex items-center justify-center p-4 bg-white/95 rounded-xl shadow-2xl">
+            <div className="w-full h-[80vh] flex items-center justify-center p-4 bg-gray-900/95 rounded-xl shadow-2xl">
               {loading ? (
                 <div className="flex justify-center items-center h-[400px]">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
@@ -678,14 +638,14 @@ export default function () {
                       <img
                         src={photo.img}
                         alt={`${photo.country} - ${index + 1}`}
-                        className="max-h-[75vh] max-w-[85vw] object-contain rounded-xl shadow-2xl border-4 border-white/20 mx-auto block"
+                        className="max-h-[75vh] max-w-[85vw] object-contain rounded-xl shadow-2xl border-4 border-gray-800/50 mx-auto block"
                       />
                     </SwiperSlide>
                   ))}
                 </Swiper>
               ) : (
                 <div className="flex justify-center items-center h-[400px]">
-                  <p className="text-xl text-gray-600">Fotoğraf bulunamadı</p>
+                  <p className="text-xl text-gray-300">Fotoğraf bulunamadı</p>
                 </div>
               )}
             </div>
