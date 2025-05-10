@@ -1,5 +1,15 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, orderBy, query } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  orderBy,
+  query,
+  deleteDoc,
+  doc,
+  updateDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { addDoc } from "firebase/firestore";
 
 // Firebase config bilgileri
@@ -21,17 +31,49 @@ const firestore = getFirestore(app);
 export const getYorumlar = async () => {
   const yorumlarRef = collection(firestore, "yorumlar");
   const q = query(yorumlarRef, orderBy("olusturulmaTarihi", "desc"));
-  const yorumlarSnapshot = await await getDocs(q);
-  const yorumlarListesi = yorumlarSnapshot.docs.map(doc => doc.data());
+  const yorumlarSnapshot = await getDocs(q);
+  const yorumlarListesi = yorumlarSnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
   return yorumlarListesi;
 };
 // Yorum eklemeye Fonksi.
-export const yorumEkle = async (ad: string, yorum: string) => {
-  await addDoc(collection(firestore, "yorumlar"), {
-    ad,
-    yorum,
-    createdAt: new Date(),
-  });
+export const yorumEkle = async (adSoyad: string, yorumMetni: string) => {
+  try {
+    await addDoc(collection(firestore, "yorumlar"), {
+      adSoyad,
+      yorumMetni,
+      olusturulmaTarihi: serverTimestamp(),
+    });
+    return true;
+  } catch (error) {
+    console.error("Yorum eklenirken hata oluştu:", error);
+    throw error;
+  }
+};
+
+export const deleteComment = async (commentId: string) => {
+  try {
+    await deleteDoc(doc(firestore, "yorumlar", commentId));
+    return true;
+  } catch (error) {
+    console.error("Yorum silinirken hata oluştu:", error);
+    throw error;
+  }
+};
+
+export const updateComment = async (commentId: string, newText: string) => {
+  try {
+    await updateDoc(doc(firestore, "yorumlar", commentId), {
+      yorumMetni: newText,
+      guncellemeTarihi: serverTimestamp(),
+    });
+    return true;
+  } catch (error) {
+    console.error("Yorum güncellenirken hata oluştu:", error);
+    throw error;
+  }
 };
 
 export { firestore };
@@ -51,7 +93,6 @@ export { firestore };
 //   appId: "1:156270534478:web:b0aa68694ffdd44c3b881f",
 //   measurementId: "G-314CB270WW"
 // };
-
 
 // const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);

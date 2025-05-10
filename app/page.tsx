@@ -9,7 +9,7 @@ import "swiper/css/pagination";
 import "swiper/css/effect-coverflow";
 import Modal from "./components/modal";
 import axios from "axios";
-import { yorumEkle } from "@/lib/yorumekle";
+import { yorumEkle, deleteComment, updateComment } from "@/lib/firebase";
 import { firestore } from "../lib/firebase";
 import { getYorumlar } from "../lib/firebase";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
@@ -61,12 +61,20 @@ export default function () {
   const [yükleniyor, setYükleniyor] = useState(false);
   const [yorumlar, setYorumlar] = useState<any[]>([]);
   const [gosterilenYorumSayisi, setGosterilenYorumSayisi] = useState(3);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
+
   const dahaFazlaGoster = () => {
     setGosterilenYorumSayisi((prev) => prev + 5); // 5 tane yorum gösterecek burası
   };
 
   const formuGonder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!adSoyad.trim() || !yorumMetni.trim()) {
+      alert("Lütfen tüm alanları doldurun!");
+      return;
+    }
+
     setYükleniyor(true);
     try {
       await yorumEkle(adSoyad, yorumMetni);
@@ -76,7 +84,8 @@ export default function () {
 
       const guncelYorumlar = await getYorumlar();
       setYorumlar(guncelYorumlar);
-    } catch (hata) {
+    } catch (error) {
+      console.error("Yorum ekleme hatası:", error);
       alert("Yorum eklenirken bir hata oluştu.");
     } finally {
       setYükleniyor(false);
@@ -125,6 +134,47 @@ export default function () {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedPhoto(null);
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (window.confirm("Bu yorumu silmek istediğinizden emin misiniz?")) {
+      try {
+        await deleteComment(commentId);
+        const guncelYorumlar = await getYorumlar();
+        setYorumlar(guncelYorumlar);
+      } catch (error) {
+        console.error("Silme hatası:", error);
+        alert("Yorum silinirken bir hata oluştu.");
+      }
+    }
+  };
+
+  const handleEditComment = (commentId: string, currentText: string) => {
+    setEditingCommentId(commentId);
+    setEditingText(currentText);
+  };
+
+  const handleUpdateComment = async (commentId: string) => {
+    if (!editingText.trim()) {
+      alert("Yorum boş olamaz!");
+      return;
+    }
+
+    try {
+      await updateComment(commentId, editingText);
+      const guncelYorumlar = await getYorumlar();
+      setYorumlar(guncelYorumlar);
+      setEditingCommentId(null);
+      setEditingText("");
+    } catch (error) {
+      console.error("Güncelleme hatası:", error);
+      alert("Yorum güncellenirken bir hata oluştu.");
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingCommentId(null);
+    setEditingText("");
   };
 
   return (
@@ -427,14 +477,13 @@ export default function () {
             <div>
               <h2 className="text-xl font-bold mb-4 text-black">Yorumlar</h2>
               <ul className="space-y-4">
-                {yorumlar
-                  .slice(0, gosterilenYorumSayisi)
-                  .map((yorum, index) => (
-                    <li
-                      key={index}
-                      className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:shadow-md transition-shadow duration-300"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
+                {yorumlar.slice(0, gosterilenYorumSayisi).map((yorum) => (
+                  <li
+                    key={yorum.id}
+                    className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:shadow-md transition-shadow duration-300"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-semibold">
                           {yorum.adSoyad.charAt(0).toUpperCase()}
                         </div>
@@ -449,12 +498,81 @@ export default function () {
                                 dateStyle: "medium",
                                 timeStyle: "short",
                               })}
+                            {yorum.guncellemeTarihi && " (Düzenlendi)"}
                           </p>
                         </div>
                       </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() =>
+                            handleEditComment(yorum.id, yorum.yorumMetni)
+                          }
+                          className="text-gray-500 hover:text-orange-500 transition-colors"
+                          title="Düzenle"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteComment(yorum.id)}
+                          className="text-gray-500 hover:text-red-500 transition-colors"
+                          title="Sil"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    {editingCommentId === yorum.id ? (
+                      <div className="mt-2">
+                        <textarea
+                          value={editingText}
+                          onChange={(e) => setEditingText(e.target.value)}
+                          className="w-full border border-gray-300 rounded-lg p-2 text-gray-800 focus:ring-2 focus:ring-orange-400 focus:border-transparent transition duration-200 outline-none resize-none"
+                          rows={3}
+                        />
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={() => handleUpdateComment(yorum.id)}
+                            className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+                          >
+                            Kaydet
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                          >
+                            İptal
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
                       <p className="text-gray-700 ml-10">{yorum.yorumMetni}</p>
-                    </li>
-                  ))}
+                    )}
+                  </li>
+                ))}
               </ul>
               {yorumlar.length > gosterilenYorumSayisi && (
                 <div className="text-center mt-4">
@@ -490,11 +608,11 @@ export default function () {
                   keyif alıyorum. <br /> Bu blogda Japonya, Sırbistan, İspanya,
                   İtalya, Rusya ve Karadağ seyahatlerimde çektiğim kareleri
                   sizlerle paylaşmak istiyorum. Projelerimde React, Next.js ve
-                  Tailwind CSS'in yanı sıra, database için Firebase,
-                  etkileşimli 3D carousel'ler için Swiper gibi teknolojiler
-                  kullanarak hem estetik hem de performans odaklı çözümler
-                  geliştiriyorum. <br /> İspanya'dan Japonya'ya uzanan bu blog,
-                  hem satırlarımı hem de anılarımı taşıyor.
+                  Tailwind CSS'in yanı sıra, database için Firebase, etkileşimli
+                  3D carousel'ler için Swiper gibi teknolojiler kullanarak hem
+                  estetik hem de performans odaklı çözümler geliştiriyorum.{" "}
+                  <br /> İspanya'dan Japonya'ya uzanan bu blog, hem satırlarımı
+                  hem de anılarımı taşıyor.
                 </p>
               </div>
 
