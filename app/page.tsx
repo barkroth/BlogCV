@@ -64,6 +64,7 @@ export default function () {
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
 
+  // pagination
   const dahaFazlaGoster = () => {
     setGosterilenYorumSayisi((prev) => prev + 5); // 5 tane yorum gösterecek burası
   };
