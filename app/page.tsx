@@ -22,11 +22,11 @@ export default function () {
   const countries = [
     {
       name: "Japonya",
-      image: "/images/japonya75.jpeg",
+      image: "/images/Japonya75.jpeg",
     },
     {
       name: "Sırbistan",
-      image: "/images/Sırbistan6.jpeg",
+      image: "/images/sırbistan6.jpeg",
     },
     {
       name: "İspanya",
