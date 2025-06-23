@@ -319,35 +319,35 @@ const photos = [
     country: "Sırbistan",
   },
   {
-    img: "/images/sırbistan112.jpeg",
+    img: "/images/sırbistan12.jpeg",
     country: "Sırbistan",
   },
   {
-    img: "/images/sırbistan113.jpeg",
+    img: "/images/sırbistan13.jpeg",
     country: "Sırbistan",
   },
   {
-    img: "/images/sırbistan115.jpeg",
+    img: "/images/sırbistan15.jpeg",
     country: "Sırbistan",
   },
   {
-    img: "/images/sırbistan119.jpeg",
+    img: "/images/sırbistan19.jpeg",
     country: "Sırbistan",
   },
   {
-    img: "/images/sırbistan117.jpeg",
+    img: "/images/sırbistan17.jpeg",
     country: "Sırbistan",
   },
   {
-    img: "/images/sırbistan118.jpeg",
+    img: "/images/sırbistan18.jpeg",
     country: "Sırbistan",
   },
   {
-    img: "/images/sırbistan120.jpeg",
+    img: "/images/sırbistan20.jpeg",
     country: "Sırbistan",
   },
   {
-    img: "/images/sırbistan121.jpeg",
+    img: "/images/sırbistan21.jpeg",
     country: "Sırbistan",
   },
   {
